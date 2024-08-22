@@ -8,8 +8,7 @@ use App\Http\Requests\HomeRequest;
 use App\Http\Requests\HomeUpdateRequest;
 use App\Services\HomeService;
 use Illuminate\Http\JsonResponse;
-use App\Http\Resources\HomeResource;
-use App\Services\OpenAIChatService;
+use App\Services\Contracts\OpenAIChatServiceInterface;
 use Illuminate\Contracts\View\View;
 use Ramsey\Collection\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -17,10 +16,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class HomeController extends Controller
 {
-    public function __construct(private readonly HomeService $service)
-    {
 
+    public function __construct(
+        private readonly HomeService $service,
+        private readonly OpenAIChatServiceInterface $chatService
+    ) {
     }
+
 
     public function index(): View
     {
@@ -29,10 +31,10 @@ class HomeController extends Controller
 
     public function store(HomeRequest $request): View
     {
-        $OpenAIChatService = new OpenAIChatService();
-        $OpenAIChatServiceResponse = $OpenAIChatService->generateResponse($request->hand);
+        $hand = $request->input('hand');
+        $response = $this->chatService->generateResponse($hand);
 
-        return view('home', compact('OpenAIChatServiceResponse'));
+        return view('home', ['OpenAIChatServiceResponse' => $response]);
     }
 
     public function show(int $id): JsonResource

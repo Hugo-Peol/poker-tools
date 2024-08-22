@@ -48,31 +48,5 @@
 @endsection
 
 @section('scripts')
-    <script>
-        document.addEventListener('selectedCardsUpdated', function(event) {
-            const container = document.getElementById('selectedCardsContainer');
-            container.innerHTML = event.detail.cards.map(card => {
-                const [rank, suit] = card.split('');
-                return `<div class="card ${getCardClass(suit)}">${rank}<br>${getCardSymbol(suit)}</div>`;
-            }).join(' ');
-        });
-
-        function getCardClass(suit) {
-            switch (suit) {
-                case 'h': return 'hearts';
-                case 'd': return 'diamonds';
-                case 'c': return 'clubs';
-                case 's': return 'spades';
-            }
-        }
-
-        function getCardSymbol(suit) {
-            switch (suit) {
-                case 'h': return '&hearts;';
-                case 'd': return '&diams;';
-                case 'c': return '&clubs;';
-                case 's': return '&spades;';
-            }
-        }
-    </script>
+    <script src="{{ asset('js/card-selector.js') }}" defer></script>
 @endsection

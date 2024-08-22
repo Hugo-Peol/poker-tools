@@ -1,27 +1,25 @@
 <?php
 
 namespace App\Services;
+use App\Services\Contracts\OpenAIChatServiceInterface;
 
-use Illuminate\Support\Facades\Http;
-use Michelf\Markdown;
-
-class OpenAIChatService
+class OpenAIChatService implements OpenAIChatServiceInterface
 {
-    protected $apiKey;
-    protected $apiUrl;
+    private $client;
+    private $markdownConverter;
+    private $configChat;
 
-    public function __construct()
+    public function __construct(OpenAIChatClient $client, MarkdownConverter $markdownConverter)
     {
-        $this->apiKey = env('OPEN_AI_KEY'); // A chave da API deve estar no arquivo .env
-        $this->apiUrl = env('OPEN_AI_API_URL'); // Endpoint para chat completions
+        $this->client = $client;
+        $this->markdownConverter = $markdownConverter;
+        $this->configChat = 'Você é um jogador profissional de poker, preciso que analise minha mão, faça críticas e sugestões sobre a jogada. Mão:';
     }
 
-    public function generateResponse($messages)
+    public function generateResponse(string $messages): string
     {
-        $configChat = 'Você é um jogador profissional de poker, preciso que analise minha mão, faça criticas e sugestões sobre a jogada. Mão:';
-        $sendToChat = $configChat . $messages;
-        $content =
-        [
+        $sendToChat = $this->configChat . $messages;
+        $content = [
             [
                 'role' => 'system',
                 'content' => 'You are a helpful assistant.'
@@ -32,30 +30,21 @@ class OpenAIChatService
             ]
         ];
 
-
-
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'Content-Type' => 'application/json',
-        ])->post($this->apiUrl, [
+        $responseData = $this->client->post([
             'model' => 'gpt-4o-mini',
             'messages' => $content,
         ]);
 
-        // Decode the JSON response
-        $responseData = $response->json();
+        return $this->extractContent($responseData);
+    }
 
-        // Access the 'content' from the 'choices' array
+    private function extractContent(array $responseData): string
+    {
         if (isset($responseData['choices'][0]['message']['content'])) {
             $content = $responseData['choices'][0]['message']['content'];
-            $markdown = new Markdown();
-            $content = isset($responseData['choices'][0]['message']['content']) ? $responseData['choices'][0]['message']['content'] : '';
-
-            return $markdown->transform($content);
-        } else {
-            // Handle the case where the 'content' is not found
-            dd('Content not found');
+            return $this->markdownConverter->convert($content);
         }
 
+        return 'Content not found';
     }
 }
