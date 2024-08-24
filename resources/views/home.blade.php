@@ -1,78 +1,86 @@
-@extends('layouts.app')
+<!-- home.blade.php -->
 
-@section('title', 'Escolha suas Cartas')
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        textarea, input[type="text"] {
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .response-container {
+            margin-top: 20px;
+        }
+        .response-container textarea {
+            height: 150px;
+            font-size: 16px;
+            white-space: pre-wrap; /* Preserve white space */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Coloque sua mão do Hand2Note no campo abaixo</h1>
+        <form action="{{ route('home.store') }}" method="POST">
+            @csrf
+            <textarea name="hand" id="hand" rows="4" placeholder="Digite a sua mão aqui..."></textarea>
+            <input type="submit" value="Submit">
+        </form>
 
-@section('content')
-    <div class="text-center mb-4">
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cardModal">
-            Escolher Mão
-        </button>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="cardModal" tabindex="-1" role="dialog" aria-labelledby="cardModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cardModalLabel">Selecione Duas Cartas</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    @component('components.poker-card-selector')
-                    @endcomponent
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                </div>
+        @if(isset($OpenAIChatServiceResponse))
+            <div class="response-container">
+                <h2>Resposta da API:</h2>
+                <div id="apiResponse">{!! $OpenAIChatServiceResponse !!}</div>
             </div>
-        </div>
+        @endif
     </div>
-
-    <!-- Display selected cards -->
-    <div class="selected-cards mt-4 text-center">
-        <h2>Cartas Selecionadas:</h2>
-        <div id="selectedCardsContainer" class="d-flex justify-content-center">
-            <!-- Selected cards will be shown here -->
-        </div>
-    </div>
-
-    @if(isset($OpenAIChatServiceResponse))
-        <div class="response-container mt-4">
-            <h2>Resposta da API:</h2>
-            <label for="apiResponse">Resposta:</label>
-            <div id="apiResponse">{!! $OpenAIChatServiceResponse !!}</div>
-        </div>
-    @endif
-@endsection
-
-@section('scripts')
-    <script>
-        document.addEventListener('selectedCardsUpdated', function(event) {
-            const container = document.getElementById('selectedCardsContainer');
-            container.innerHTML = event.detail.cards.map(card => {
-                const [rank, suit] = card.split('');
-                return `<div class="card ${getCardClass(suit)}">${rank}<br>${getCardSymbol(suit)}</div>`;
-            }).join(' ');
-        });
-
-        function getCardClass(suit) {
-            switch (suit) {
-                case 'h': return 'hearts';
-                case 'd': return 'diamonds';
-                case 'c': return 'clubs';
-                case 's': return 'spades';
-            }
-        }
-
-        function getCardSymbol(suit) {
-            switch (suit) {
-                case 'h': return '&hearts;';
-                case 'd': return '&diams;';
-                case 'c': return '&clubs;';
-                case 's': return '&spades;';
-            }
-        }
-    </script>
-@endsection
+</body>
+</html>

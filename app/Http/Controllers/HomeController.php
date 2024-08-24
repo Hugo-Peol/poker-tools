@@ -37,18 +37,4 @@ class HomeController extends Controller
         return view('home', ['OpenAIChatServiceResponse' => $response]);
     }
 
-    public function show(int $id): JsonResource
-    {
-        return $this->service->findOne($id);
-    }
-
-    public function update(HomeUpdateRequest $request, int $id): JsonResource
-    {
-        return $this->service->edit($request, $id);
-    }
-
-    public function destroy(int $id): JsonResponse|Model|Collection
-    {
-        return $this->service->delete($id);
-    }
 }
